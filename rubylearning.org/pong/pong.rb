@@ -59,8 +59,12 @@ Shoes.app(
   player_x = window_width - 10 - paddle_width
   player_y = window_height - 10 - paddle_height
   # Ball starting position.  It bounces around.
-  ball_x = ( width  / 2 ) - ( ball_radius / 2 )
-  ball_y = ( height / 2 ) - ( ball_radius / 2 )
+  # The middle would be:
+  #ball_x = ( width  / 2 ) - ( ball_radius / 2 )
+  #ball_y = ( height / 2 ) - ( ball_radius / 2 )
+  # A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
+  ball_x = playing_field_boundery + ball_radius
+  ball_y = playing_field_boundery + ball_radius
   #
   @computer_paddle = (
     rect(
@@ -135,6 +139,12 @@ Shoes.app(
     :stroke => playing_field_stroke,
   )
 
+  # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
+  animate( 20 ) do
+    @ball.move( ball_x, ball_y )
+    ball_x += 1
+    ball_y += 1
+  end
 
   # Your paddle synchronizes with the mouse movement.
   motion do | mouse_x, mouse_y |
@@ -165,8 +175,6 @@ Shoes.app(
   end
 end
 
-
-# A ball appears left-top side and moves smoothly to right-bottom side at 20 frames per second.
 
 
 =begin
