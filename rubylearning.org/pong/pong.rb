@@ -43,43 +43,52 @@ Shoes.app(
   ) do
   # 'grey' isn't valid.
   background lightblue..gray
-  # Starting position.  It tries to follow the ball.
+  # TODO:  Convert these to hex values then move them to the top configuration area.
+  ball_fill = red
+  ball_stroke = black
+  playing_field_stroke = orange
+  computer_fill = purple
+  computer_stroke = black
+  player_fill = orange
+  player_stroke = black
+  #
+  # Computer paddle sarting position.  It tries to follow the ball.
   computer_x = 10
   computer_y = 10
-  # Starting position.  It follows the mouse.
+  # Player paddle starting position.  It follows the mouse.
   player_x = window_width - 10 - paddle_width
   player_y = window_height - 10 - paddle_height
-  # Starting position.  It bounces around.
+  # Ball starting position.  It bounces around.
   ball_x = ( width  / 2 ) - ( ball_radius / 2 )
   ball_y = ( height / 2 ) - ( ball_radius / 2 )
   #
   @computer_paddle = (
-    fill purple
-    stroke black
     rect(
       computer_x,
       computer_y,
       paddle_width,
       paddle_height,
+      :stroke => computer_stroke,
+      :fill => computer_fill,
     )
   )
   @player_paddle = (
-    fill orange
-    stroke black
     rect(
       player_x,
       player_y,
       paddle_width,
       paddle_height,
+      :stroke => player_stroke,
+      :fill => player_fill,
     )
   )
   @ball = (
-    fill red
-    stroke black
     oval(
       :left => ball_x,
       :top => ball_y,
-      :radius => ball_radius
+      :radius => ball_radius,
+      :fill => ball_fill,
+      :stroke => ball_stroke,
     )
   )
 
@@ -99,6 +108,7 @@ Shoes.app(
     playing_field_boundery,                 # origin y
     window_width - playing_field_boundery,  # destination y
     playing_field_boundery,                 # destination y
+    :stroke => playing_field_stroke,
   )
   # left
   line(
@@ -106,6 +116,7 @@ Shoes.app(
     playing_field_boundery,
     playing_field_boundery,
     window_height - playing_field_boundery,
+    :stroke => playing_field_stroke,
   )
   # right
   line(
@@ -113,6 +124,7 @@ Shoes.app(
     playing_field_boundery,
     window_height - playing_field_boundery,
     window_width - playing_field_boundery,
+    :stroke => playing_field_stroke,
   )
   # bottom
   line(
@@ -120,36 +132,40 @@ Shoes.app(
     window_height - playing_field_boundery,
     window_width - playing_field_boundery,
     window_height - playing_field_boundery,
+    :stroke => playing_field_stroke,
   )
 
 
-  motion do |_x, _y|
-    if player_x and player_y and (player_x != _x or player_y != _y)
-      append do
-        #line player_x, player_y, _x, _y
-        @player_paddle.move( player_x, player_y )
-      end
+  # Your paddle synchronizes with the mouse movement.
+  motion do | mouse_x, mouse_y |
+    append do
+      @player_paddle.move( player_x, player_y )
     end
-    player_x, player_y = _x, _y
+    #
+    player_x = mouse_x
     # Restrict x
     # .. upper limit
-    player_x = ( window_width - 10 - paddle_width ) if player_x > ( window_width - 10 - paddle_width )
-    # .. lower limit
-    # FIXME:  The paddle appears on the bottom-left the first time the mouse enters the play field.
-    player_x = 10 if player_x < 10
+    if player_x > ( window_width - 10 - paddle_width ) then
+      player_x = ( window_width - 10 - paddle_width )
+    elsif player_x < 10
+      # .. lower limit
+      # FIXME:  The paddle appears on the bottom-left the first time the mouse enters the play field.
+      player_x = 10
+    end
+    #
+    player_y = mouse_y
     # Restrict y
     # .. upper limit
-    player_y = ( window_height - 10 - paddle_height ) if player_y > ( window_height - 10 )
-    # .. lower limit
-    player_y = ( window_height - 10 - paddle_height ) if player_y < ( window_height - 10 )
+    if player_y > ( window_height - 10 - paddle_height ) then
+      player_y = ( window_height - 10 - paddle_height )
+    elsif player_y < ( window_height - 10 - paddle_height )
+      # .. lower limit
+      player_y = ( window_height - 10 - paddle_height )
+    end
   end
-
-
 end
 
 
-
-# Your paddle synchronizes with the mouse movement.
 # A ball appears left-top side and moves smoothly to right-bottom side at 20 frames per second.
 
 
