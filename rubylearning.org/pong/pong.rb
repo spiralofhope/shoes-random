@@ -36,6 +36,7 @@ ball_radius = 7
 paddle_width = 60
 paddle_height = 10
 playing_field_boundery = 6
+playing_field_color = '#FFAA00'..'#009900' # orange..green
 ball_speed = 10
 background_color = '#333333'..'#000000' # grey..black
 ball_fill = '#FF0000' # red
@@ -109,41 +110,12 @@ Shoes.app(
             :resizable => false,
   ) do
   # Playing field design
-  # TODO:  Is there a dashed stroke?
-  # TODO:  Is there a "transparent" fill?  Then I just drop a square.
   # TODO:  A checkerboard would be a nice background.
-  # top
   background( background_color )
-  line(
-    playing_field_boundery,                 # origin x
-    playing_field_boundery,                 # origin y
-    window_width - playing_field_boundery,  # destination y
-    playing_field_boundery,                 # destination y
-    :stroke => playing_field_stroke,
-  )
-  # left
-  line(
-    playing_field_boundery,
-    playing_field_boundery,
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    :stroke => playing_field_stroke,
-  )
-  # right
-  line(
-    window_height - playing_field_boundery,
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    window_width - playing_field_boundery,
-    :stroke => playing_field_stroke,
-  )
-  # bottom
-  line(
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    window_width - playing_field_boundery,
-    window_height - playing_field_boundery,
-    :stroke => playing_field_stroke,
+  border(
+    # TODO:  Is there a dashed stroke?
+    playing_field_color,
+    :margin => playing_field_boundery,
   )
   # Computer paddle sarting position.  It tries to follow the ball.
   # This doesn't matter much, since as soon as the game begins and the ball moves, the computer paddle will move appropriately.
@@ -234,5 +206,4 @@ Quitting.  Would be better as a menu, with a hotkey.
   ) do
     quit unless confirm "Quit?"
   end
-
 =end
