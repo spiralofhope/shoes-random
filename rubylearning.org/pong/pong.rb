@@ -32,12 +32,16 @@
 program_version = 0.1
 window_height = 400
 window_width = 400
+
+
+ball_speed = 2
+# 2 is the default for the lesson's animate speed of 20.
+ball_smoothness = 2
 ball_radius = 7
 paddle_width = 60
 paddle_height = 10
 playing_field_boundery = 6
 playing_field_color = '#FFAA00'..'#009900' # orange..green
-ball_speed = 10
 background_color = '#333333'..'#000000' # grey..black
 ball_fill = '#FF0000' # red
 ball_stroke = '#000000' # black
@@ -49,56 +53,6 @@ player_paddle_fill = '#FFAA00' # orange
 player_paddle_stroke = '#000000' # black
 player_paddle_curve = 3
 
-# Not user-serviceable
-y_paddle_limit_down  = ( window_height - paddle_height - playing_field_boundery - 5 )
-x_paddle_limit_right = ( window_width  - paddle_width  - playing_field_boundery - 3 )
-y_paddle_limit_up = y_paddle_limit_down
-x_paddle_limit_left = ( playing_field_boundery + 3 )
-#
-@@y_ball_limit_down  = ( y_paddle_limit_down - ( ball_radius * 2 ) )
-@@x_ball_limit_right = ( x_paddle_limit_right - ( ball_radius * 2 ) + paddle_width )
-@@y_ball_limit_up   = playing_field_boundery + ball_radius + paddle_height - 2
-@@x_ball_limit_left = playing_field_boundery + ( ball_radius / 2 )
-# A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
-ball_x = @@x_ball_limit_left
-ball_y = @@y_ball_limit_up
-# The middle would be:
-#ball_x = ( width  / 2 ) - ( ball_radius / 2 )
-#ball_y = ( height / 2 ) - ( ball_radius / 2 )
-# The ball begins moving to the bottom-right-ish.
-ball_angle = 90 + 45 # math is hard.
-
-def ball_movement(
-              ball_x,
-              ball_y,
-              ball_angle,
-              ball_speed
-  )
-  # 3. Lock-in the ball within the window [x]
-  if    ball_x + ball_speed > @@x_ball_limit_right then
-    # TODO:  Bounce a ball on the edge of the window.
-    ball_x = @@x_ball_limit_right
-  elsif ball_x + ball_speed < @@x_ball_limit_left  then
-    # TODO:  Bounce a ball on the edge of the window.
-    ball_x = @@x_ball_limit_left
-  else
-    ball_x += ball_speed
-  end
-  #
-  # 3. Lock-in the ball within the window [y]
-  if    ball_y + ball_speed > @@y_ball_limit_down then
-    # TODO:  Bounce a ball on the edge of the window.
-    ball_y = @@y_ball_limit_down
-  elsif ball_y + ball_speed < @@y_ball_limit_up   then
-    # TODO:  Bounce a ball on the edge of the window.
-    ball_y = @@y_ball_limit_up
-  else
-    ball_y += ball_speed
-  end
-  #
-  return ball_x, ball_y, ball_angle, ball_speed
-end
-
 # 1. Open Shoes Window
 Shoes.app(
             # Window's width and height are both 400 pixel.
@@ -109,6 +63,11 @@ Shoes.app(
             #
             :resizable => false,
   ) do
+  y_paddle_limit_down  = ( self.height - paddle_height - playing_field_boundery - 5 )
+  x_paddle_limit_right = ( self.width  - paddle_width  - playing_field_boundery - 3 )
+  y_paddle_limit_up = y_paddle_limit_down
+  x_paddle_limit_left = ( playing_field_boundery + 3 )
+  #
   # Playing field design
   # TODO:  A checkerboard would be a nice background.
   background( background_color )
@@ -147,6 +106,9 @@ Shoes.app(
       :curve => player_paddle_curve,
     )
   )
+  # A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
+  ball_x = playing_field_boundery + ( ball_radius / 2 )
+  ball_y = playing_field_boundery + ball_radius + paddle_height - 2
   @ball = (
     oval(
       :left => ball_x,
@@ -163,14 +125,42 @@ Shoes.app(
   # Allocate player's (your) paddle on the bottom.
   @player_paddle.move( player_x, player_y )
   # Ball
-  # A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
+  # (A ball appears) left-top side and moves smoothly to right-bottom side at 20 frames per second.
   @ball.move( ball_x, ball_y )
   #
   # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
-  animate( 20 ) do
-    @ball.move( ball_x, ball_y )
-    ball_x, ball_y, ball_angle, ball_speed = ball_movement( ball_x, ball_y, ball_angle, ball_speed )
-    #p "#{ball_x}x #{ball_y}y #{ball_angle} #{ball_speed}"
+  xdir = 1
+  ydir = 1
+  # I don't understand these numbers, but I'll keep them!
+  xspeed = 8.4
+  yspeed = 6.6
+  #
+  # For better ball_smoothness, decrease the ball speed and increase the animate speed.
+  xspeed /= ball_smoothness
+  yspeed /= ball_smoothness
+  xspeed *= ball_speed
+  yspeed *= ball_speed
+  #
+  animate_speed = 10 * ball_smoothness
+  x = self.width / 2
+  y = self.height / 2
+  # the + 2 is for the stroke width of the ball and the stroke width of the border.
+  size = ball_radius * 2 + 2
+  animate( animate_speed ) do
+    # Re-assert the paddle's limitations.
+    y_paddle_limit_down  = ( self.height - paddle_height - playing_field_boundery - 5 )
+    x_paddle_limit_right = ( self.width  - paddle_width  - playing_field_boundery - 3 )
+    y_paddle_limit_up = y_paddle_limit_down
+    x_paddle_limit_left = ( playing_field_boundery + 3 )
+    #
+    x = x + xspeed * xdir
+    y = y + yspeed * ydir
+    # TODO:  Deal with resizes catching the ball off-screen.  The ball will do odd things.
+    # The + 2 is for the stroke width of the ball and the stroke width of the border.
+    xdir *= -1 if x > self.width  - playing_field_boundery - size or x < playing_field_boundery + 2 # left
+    ydir *= -1 if y > self.height - playing_field_boundery - size or y < playing_field_boundery + 2 # top
+    #
+    @ball.move x.to_i, y.to_i
   end
   #
   # Your paddle synchronizes with the mouse movement.
