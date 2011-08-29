@@ -36,6 +36,7 @@ window_width = 400
 
 ball_speed = 2
 # 2 is the default for the lesson's animate speed of 20.
+# A higher smoothness looks better, but may require a faster computer.
 ball_smoothness = 2
 ball_radius = 7
 paddle_width = 60
