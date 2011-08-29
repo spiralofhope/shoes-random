@@ -179,21 +179,15 @@ Shoes.app(
     if player_y > y_paddle_limit_down then player_y = y_paddle_limit_down end
     if player_y < y_paddle_limit_up   then player_y = y_paddle_limit_up   end
   end
-end
-
-
-
-=begin
-
-IDEAS:
-
-Quitting.  Would be better as a menu, with a hotkey.
-
-  button(
-          "Quit",
-          :top => 1,
-          :left => 1,
-  ) do
-    quit unless confirm "Quit?"
+  keypress do |k|
+    # Q or ^c to quit.
+    if k         == 'Q'          then exit end
+    if k.inspect == ':control_c' then exit end
+    # TODO:  Smoother keyboard paddle control, via more frequent keyboard checking.  This is likely restricted by the operating system / BIOS settings.
+    # FIXME:  Upon first keypress it hops to the left.
+    ## It should know its current position -- and not be based on the mouse coordinates (unless the mouse has actually entered the playing field once).
+    if k.inspect == ':left'  then @player_paddle.move( player_x -= 10, player_y ) end
+    if k.inspect == ':right' then @player_paddle.move( player_x += 10, player_y ) end
+    p k
   end
-=end
+end
