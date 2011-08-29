@@ -24,16 +24,27 @@
 
 # BUG/TODO/TOWORKAROUND - mouse movement is not tracked/updated fast enough.  It's possible to whip the mouse across and out of the program window, and the paddle will not be trapped in the left wall.  To remedy this, track if the mouse enters/leaves the window.  Track the positioning over time of the paddle.  If the mouse is out, and the position looked like it was going left, then peg the paddle to the left.  Same with the right.
 
+# IDEA:  The longer the game plays, the less wide the paddles become, the faster the ball goes.  Can even flash some text up..
+
 # User-serviceable variables.
 program_version = 0.1
 window_height = 400
 window_width = 400
 ball_radius = 7
 paddle_width = 60
-paddle_height = 4
+paddle_height = 10
 playing_field_boundery = 6
 ball_speed = 10
-
+background_color = '#333333'..'#000000'
+ball_fill = '#FF0000' # red
+ball_stroke = '#000000' # black
+playing_field_stroke = '#FFAA00' # orange
+computer_paddle_fill = '#990099' # purple
+computer_paddle_stroke = '#000000' # black
+computer_paddle_curve = 3
+player_paddle_fill = '#FFAA00' # orange
+player_paddle_stroke = '#000000' # black
+player_paddle_curve = 3
 #
 #
 y_paddle_limit_down  = ( window_height - paddle_height - playing_field_boundery - 5 )
@@ -41,14 +52,16 @@ x_paddle_limit_right = ( window_width  - paddle_width  - playing_field_boundery 
 y_paddle_limit_up = y_paddle_limit_down
 x_paddle_limit_left = ( playing_field_boundery + 3 )
 #
-# I'm not entirely sure what I'm doing.  =)
-@@y_ball_limit_down  = ( y_paddle_limit_down  - ball_radius - paddle_height - 4 )
-@@x_ball_limit_right = ( x_paddle_limit_right - ball_radius + paddle_width  - 4 )
-@@y_ball_limit_up   = playing_field_boundery + ( ball_radius / 2 ) + ( paddle_height / 2 ) + 4
-@@x_ball_limit_left = playing_field_boundery + ( ball_radius / 2 ) - ( paddle_height / 2 ) + 4
+@@y_ball_limit_down  = ( y_paddle_limit_down - ( ball_radius * 2 ) )
+@@x_ball_limit_right = ( x_paddle_limit_right - ( ball_radius * 2 ) + paddle_width )
+@@y_ball_limit_up   = playing_field_boundery + ball_radius + paddle_height - 2
+@@x_ball_limit_left = playing_field_boundery + ( ball_radius / 2 )
 # A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
 ball_x = @@x_ball_limit_left
 ball_y = @@y_ball_limit_up
+# The middle would be:
+#ball_x = ( width  / 2 ) - ( ball_radius / 2 )
+#ball_y = ( height / 2 ) - ( ball_radius / 2 )
 # The ball begins moving to the bottom-right-ish.
 ball_angle = 90 + 45 # math is hard.
 
@@ -74,7 +87,6 @@ def ball_movement(
     #
     # Restrict ball y
     if    ball_y + ball_speed > @@y_ball_limit_down then
-      # TODO
       ball_y = @@y_ball_limit_down
     elsif ball_y + ball_speed < @@y_ball_limit_up   then
       # TODO
@@ -96,36 +108,24 @@ Shoes.app(
             #
             :resizable => false,
   ) do
-  # 'grey' isn't valid.
-  background lightblue..gray
-  # TODO:  Convert these to hex values then move them to the top configuration area.
-  ball_fill = red
-  ball_stroke = black
-  playing_field_stroke = orange
-  computer_fill = purple
-  computer_stroke = black
-  player_fill = orange
-  player_stroke = black
-  #
+  background( background_color )
   # Computer paddle sarting position.  It tries to follow the ball.
+  # This doesn't matter much, since as soon as the game begins and the ball moves, the computer paddle will move appropriately.
   computer_x = 10
   computer_y = 10
   # Player paddle starting position.  It follows the mouse.
+  # This doesn't matter much, since as soon as the user's mouse enters the window the paddle will move appropriately.
   player_x = x_paddle_limit_right
   player_y = y_paddle_limit_down
-  # Ball starting position.  It bounces around.
-  # The middle would be:
-  #ball_x = ( width  / 2 ) - ( ball_radius / 2 )
-  #ball_y = ( height / 2 ) - ( ball_radius / 2 )
-  #
   @computer_paddle = (
     rect(
       computer_x,
       computer_y,
       paddle_width,
       paddle_height,
-      :stroke => computer_stroke,
-      :fill => computer_fill,
+      :stroke => computer_paddle_stroke,
+      :fill => computer_paddle_fill,
+      :curve => computer_paddle_curve,
     )
   )
   @player_paddle = (
@@ -134,8 +134,9 @@ Shoes.app(
       player_y,
       paddle_width,
       paddle_height,
-      :stroke => player_stroke,
-      :fill => player_fill,
+      :stroke => player_paddle_stroke,
+      :fill => player_paddle_fill,
+      :curve => player_paddle_curve,
     )
   )
   @ball = (
