@@ -31,6 +31,18 @@ paddle_width = 60
 paddle_height = 4
 playing_field_boundery = 6
 
+
+#
+#y_ball_limit_down  = ( window_height - 10 - () )
+#x_ball_limit_right = ( window_width  - 10 - paddle_width )
+#y_ball_limit_up = playing_field_boundery + ( ball_radius / 2 )
+#x_ball_limit_left = y_ball_limit_up
+
+y_paddle_limit_down  = ( window_height - paddle_height - playing_field_boundery - 5 )
+x_paddle_limit_right = ( window_width  - paddle_width  - playing_field_boundery - 3 )
+y_paddle_limit_up = y_paddle_limit_down
+x_paddle_limit_left = ( playing_field_boundery + 3 )
+
 # 1. Open Shoes Window
 Shoes.app(
             # Window's width and height are both 400 pixel.
@@ -56,8 +68,8 @@ Shoes.app(
   computer_x = 10
   computer_y = 10
   # Player paddle starting position.  It follows the mouse.
-  player_x = window_width - 10 - paddle_width
-  player_y = window_height - 10 - paddle_height
+  player_x = x_paddle_limit_right
+  player_y = y_paddle_limit_down
   # Ball starting position.  It bounces around.
   # The middle would be:
   #ball_x = ( width  / 2 ) - ( ball_radius / 2 )
@@ -142,9 +154,19 @@ Shoes.app(
   # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
   animate( 20 ) do
     @ball.move( ball_x, ball_y )
-    ball_x += 1
-    ball_y += 1
+    # Direction and speed.
+    ball_x += 5
+    ball_y += 5
+    # TODO: Check for a collision.
+    if ball_y > ( window_width - 10 - paddle_width ) then
+      ball_y = ( window_width - 10 - paddle_width )
+    end
+    #if ball_x
   end
+
+# 3. Lock-in the ball within the window
+# Bounce a ball on the edge of the window.
+
 
   # Your paddle synchronizes with the mouse movement.
   motion do | mouse_x, mouse_y |
@@ -154,24 +176,13 @@ Shoes.app(
     #
     player_x = mouse_x
     # Restrict x
-    # .. upper limit
-    if player_x > ( window_width - 10 - paddle_width ) then
-      player_x = ( window_width - 10 - paddle_width )
-    elsif player_x < 10
-      # .. lower limit
-      # FIXME:  The paddle appears on the bottom-left the first time the mouse enters the play field.
-      player_x = 10
-    end
+    if player_x > x_paddle_limit_right then player_x = x_paddle_limit_right end
+    if player_x < x_paddle_limit_left  then player_x = x_paddle_limit_left  end
     #
     player_y = mouse_y
     # Restrict y
-    # .. upper limit
-    if player_y > ( window_height - 10 - paddle_height ) then
-      player_y = ( window_height - 10 - paddle_height )
-    elsif player_y < ( window_height - 10 - paddle_height )
-      # .. lower limit
-      player_y = ( window_height - 10 - paddle_height )
-    end
+    if player_y > y_paddle_limit_down then player_y = y_paddle_limit_down end
+    if player_y < y_paddle_limit_up   then player_y = y_paddle_limit_up   end
   end
 end
 
