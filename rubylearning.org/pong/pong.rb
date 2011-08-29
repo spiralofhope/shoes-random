@@ -26,6 +26,8 @@
 
 # IDEA:  The longer the game plays, the less wide the paddles become, the faster the ball goes.  Can even flash some text up..
 
+# IDEA:  Make it resizeable, and act accordingly.  There are things like app.height
+
 # User-serviceable variables.
 program_version = 0.1
 window_height = 400
@@ -35,7 +37,7 @@ paddle_width = 60
 paddle_height = 10
 playing_field_boundery = 6
 ball_speed = 10
-background_color = '#333333'..'#000000'
+background_color = '#333333'..'#000000' # grey..black
 ball_fill = '#FF0000' # red
 ball_stroke = '#000000' # black
 playing_field_stroke = '#FFAA00' # orange
@@ -45,8 +47,8 @@ computer_paddle_curve = 3
 player_paddle_fill = '#FFAA00' # orange
 player_paddle_stroke = '#000000' # black
 player_paddle_curve = 3
-#
-#
+
+# Not user-serviceable
 y_paddle_limit_down  = ( window_height - paddle_height - playing_field_boundery - 5 )
 x_paddle_limit_right = ( window_width  - paddle_width  - playing_field_boundery - 3 )
 y_paddle_limit_up = y_paddle_limit_down
@@ -71,30 +73,28 @@ def ball_movement(
               ball_angle,
               ball_speed
   )
-  
-    # Direction and speed.
-    # TODO: Check for a collision and do stuff with it.
-    # Restrict ball x
-    if    ball_x + ball_speed > @@x_ball_limit_right then
-      # TODO
-      ball_x = @@x_ball_limit_right
-    elsif ball_x + ball_speed < @@x_ball_limit_left  then
-      # TODO
-      ball_x = @@x_ball_limit_left
-    else
-      ball_x += ball_speed
-    end
-    #
-    # Restrict ball y
-    if    ball_y + ball_speed > @@y_ball_limit_down then
-      ball_y = @@y_ball_limit_down
-    elsif ball_y + ball_speed < @@y_ball_limit_up   then
-      # TODO
-      ball_y = @@y_ball_limit_up
-    else
-      ball_y += ball_speed
-    end
-
+  # 3. Lock-in the ball within the window [x]
+  if    ball_x + ball_speed > @@x_ball_limit_right then
+    # TODO:  Bounce a ball on the edge of the window.
+    ball_x = @@x_ball_limit_right
+  elsif ball_x + ball_speed < @@x_ball_limit_left  then
+    # TODO:  Bounce a ball on the edge of the window.
+    ball_x = @@x_ball_limit_left
+  else
+    ball_x += ball_speed
+  end
+  #
+  # 3. Lock-in the ball within the window [y]
+  if    ball_y + ball_speed > @@y_ball_limit_down then
+    # TODO:  Bounce a ball on the edge of the window.
+    ball_y = @@y_ball_limit_down
+  elsif ball_y + ball_speed < @@y_ball_limit_up   then
+    # TODO:  Bounce a ball on the edge of the window.
+    ball_y = @@y_ball_limit_up
+  else
+    ball_y += ball_speed
+  end
+  #
   return ball_x, ball_y, ball_angle, ball_speed
 end
 
@@ -108,7 +108,43 @@ Shoes.app(
             #
             :resizable => false,
   ) do
+  # Playing field design
+  # TODO:  Is there a dashed stroke?
+  # TODO:  Is there a "transparent" fill?  Then I just drop a square.
+  # TODO:  A checkerboard would be a nice background.
+  # top
   background( background_color )
+  line(
+    playing_field_boundery,                 # origin x
+    playing_field_boundery,                 # origin y
+    window_width - playing_field_boundery,  # destination y
+    playing_field_boundery,                 # destination y
+    :stroke => playing_field_stroke,
+  )
+  # left
+  line(
+    playing_field_boundery,
+    playing_field_boundery,
+    playing_field_boundery,
+    window_height - playing_field_boundery,
+    :stroke => playing_field_stroke,
+  )
+  # right
+  line(
+    window_height - playing_field_boundery,
+    playing_field_boundery,
+    window_height - playing_field_boundery,
+    window_width - playing_field_boundery,
+    :stroke => playing_field_stroke,
+  )
+  # bottom
+  line(
+    playing_field_boundery,
+    window_height - playing_field_boundery,
+    window_width - playing_field_boundery,
+    window_height - playing_field_boundery,
+    :stroke => playing_field_stroke,
+  )
   # Computer paddle sarting position.  It tries to follow the ball.
   # This doesn't matter much, since as soon as the game begins and the ball moves, the computer paddle will move appropriately.
   computer_x = 10
@@ -148,61 +184,23 @@ Shoes.app(
       :stroke => ball_stroke,
     )
   )
-
+  #
   # 2. Show two paddles and a ball
   # Allocate computer paddle on the top (immobile yet).
   @computer_paddle.move( computer_x, computer_y )
   # Allocate player's (your) paddle on the bottom.
   @player_paddle.move( player_x, player_y )
   # Ball
+  # A ball appears (left-top side) and moves smoothly to right-bottom side at 20 frames per second.
   @ball.move( ball_x, ball_y )
-  # Playing field.
-  # TODO:  Is there a dashed stroke?
-  # TODO:  Is there a "transparent" fill?  Then I just drop a square.
-  # top
-  line(
-    playing_field_boundery,                 # origin x
-    playing_field_boundery,                 # origin y
-    window_width - playing_field_boundery,  # destination y
-    playing_field_boundery,                 # destination y
-    :stroke => playing_field_stroke,
-  )
-  # left
-  line(
-    playing_field_boundery,
-    playing_field_boundery,
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    :stroke => playing_field_stroke,
-  )
-  # right
-  line(
-    window_height - playing_field_boundery,
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    window_width - playing_field_boundery,
-    :stroke => playing_field_stroke,
-  )
-  # bottom
-  line(
-    playing_field_boundery,
-    window_height - playing_field_boundery,
-    window_width - playing_field_boundery,
-    window_height - playing_field_boundery,
-    :stroke => playing_field_stroke,
-  )
-
+  #
   # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
   animate( 20 ) do
     @ball.move( ball_x, ball_y )
     ball_x, ball_y, ball_angle, ball_speed = ball_movement( ball_x, ball_y, ball_angle, ball_speed )
     #p "#{ball_x}x #{ball_y}y #{ball_angle} #{ball_speed}"
   end
-
-# 3. Lock-in the ball within the window
-# Bounce a ball on the edge of the window.
-
-
+  #
   # Your paddle synchronizes with the mouse movement.
   motion do | mouse_x, mouse_y |
     append do
