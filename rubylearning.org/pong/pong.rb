@@ -32,9 +32,11 @@
 program_version = 0.1
 window_height = 400
 window_width = 400
-
-
 ball_speed = 2
+# How fast can the computer catch up?
+computer_speed = 7
+# How random is the computer?
+computer_randomness = 2
 # 2 is the default for the lesson's animate speed of 20.
 # A higher smoothness looks better, but may require a faster computer.
 ball_smoothness = 2
@@ -77,6 +79,7 @@ Shoes.app(
     playing_field_color,
     :margin => playing_field_boundery,
   )
+  ball_bounces = 0
   # Computer paddle sarting position.  It tries to follow the ball.
   # This doesn't matter much, since as soon as the game begins and the ball moves, the computer paddle will move appropriately.
   computer_x = 10
@@ -132,7 +135,7 @@ Shoes.app(
   # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
   xdir = 1
   ydir = 1
-  # I don't understand these numbers, but I'll keep them!
+  # I don't understand these numbers, but I'll keep them!  Perhaps this is the pixel height:width size ratio.
   xspeed = 8.4
   yspeed = 6.6
   #
@@ -143,25 +146,82 @@ Shoes.app(
   yspeed *= ball_speed
   #
   animate_speed = 10 * ball_smoothness
-  x = self.width / 2
-  y = self.height / 2
+  ball_x = self.width / 2
+  ball_y = self.height / 2
   # the + 2 is for the stroke width of the ball and the stroke width of the border.
-  size = ball_radius * 2 + 2
+  size = ( ball_radius * 2 ) + 2
   animate( animate_speed ) do
-    # Re-assert the paddle's limitations.
+    # Re-assert the paddle's limitations.  This notices if the window resizes.
     y_paddle_limit_down  = ( self.height - paddle_height - playing_field_boundery - 5 )
     x_paddle_limit_right = ( self.width  - paddle_width  - playing_field_boundery - 3 )
     y_paddle_limit_up = y_paddle_limit_down
     x_paddle_limit_left = ( playing_field_boundery + 3 )
     #
-    x = x + xspeed * xdir
-    y = y + yspeed * ydir
+    ball_y_previous = ball_y || 0
+    ball_x = ball_x + xspeed * xdir
+    ball_y = ball_y + yspeed * ydir
     # TODO:  Deal with resizes catching the ball off-screen.  The ball will do odd things.
-    # The + 2 is for the stroke width of the ball and the stroke width of the border.
-    xdir *= -1 if x > self.width  - playing_field_boundery - size or x < playing_field_boundery + 2 # left
-    ydir *= -1 if y > self.height - playing_field_boundery - size or y < playing_field_boundery + 2 # top
-    #
-    @ball.move x.to_i, y.to_i
+    # just reset the game?
+    # pause the game?
+    # Figure out when the last useful x/y ball coordinates were and reset to there and continue?
+
+    # FIXME - there is a multi-bounce happening if the paddle clips through the ball.  This can happen with the computer or player baddle.
+    # FIXME - I should allow the ball to "fall through" the window top/bottom.  It will look more legit.
+    # FIXME - it feels like the left side of the computer paddle is allowing a victory.  Check.
+    # Lock-in the ball within the window
+    # bottom/player side, check for a paddle collision
+    # Have your paddle hit the ball.
+    if    ( ball_y > self.height - playing_field_boundery - paddle_height - size and
+            ball_x > player_x and
+            ball_x < player_x + paddle_width
+          ) then
+      ydir *= -1
+      ball_bounces += 1
+      puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - PLAYER"
+    # top/computer side, check for a paddle collision
+    elsif ( ball_y < 0 + playing_field_boundery + paddle_height + size and
+            ball_x > computer_x and
+            ball_x < computer_x + paddle_width
+          ) then
+      ydir *= -1
+      ball_bounces += 1
+      puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - COMPUTER"
+    # bottom/player side, check for a point
+    elsif ball_y > ( self.height - playing_field_boundery - size ) then
+      ydir *= -1
+      puts "The computer wins, it took #{ball_bounces} ball bounces."
+      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
+      # TODO:  End game
+    # top/computer side, check for a point
+    # The numbers are right, but it doesn't look right when animated.
+    elsif ball_y < ( 0 + playing_field_boundery + size ) then
+      ydir *= -1
+      puts "The player wins, it took #{ball_bounces} ball bounces."
+      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
+      # TODO:  End game
+    # left/right, bounce the ball
+    # Bounce a ball on the edge of the window.
+    elsif (  ball_x > self.width - playing_field_boundery - size or
+             ball_x < 0          + playing_field_boundery + size
+          ) then
+      xdir *= -1
+      ball_bounces += 1
+      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
+    end
+    # Move the ball
+    @ball.move ball_x.to_i, ball_y.to_i
+    # Computer's paddle synchronizes with the ball movement.
+    # TODO:  Limit the computer paddle within the play field the same way the player's paddle needs limiting.
+    @computer_paddle.move( computer_x, computer_y )
+    # This needs to be a little fuzzy, to make the game play good.
+    if ball_y < ball_y_previous and ball_y < self.height / 1.5 then
+      rand = ( Random.rand( 2 ) + 2 )
+      if    computer_x + ( paddle_width / 2 ) > ball_x then
+        computer_x -= ( computer_speed - Random.rand( computer_randomness ) / rand )
+      elsif computer_x + ( paddle_width / 2 ) < ball_x then
+        computer_x += ( computer_speed + Random.rand( computer_randomness ) / rand )
+      end
+    end
   end
   #
   # Your paddle synchronizes with the mouse movement.
