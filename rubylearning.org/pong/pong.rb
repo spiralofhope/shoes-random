@@ -8,6 +8,7 @@
     Allocate player's (your) paddle on the bottom.
     Your paddle synchronizes with the mouse movement.
     A ball appears left-top side and moves smoothly to right-bottom side at 20 frames per second.
+    [I'm unhappy about the actual 20fps smoothness, but I'm told to not worry]
 
 3. Lock-in the ball within the window
     Bounce a ball on the edge of the window.
@@ -17,6 +18,7 @@
     Have your paddle hit the ball.
     have computer's paddle hit the ball.
     Change ball's speed and bounce angle when the ball is hit.
+    [I'm unsure about what changing the bounce angle means.  I do the same basic thing that happens when a wall is struck.]
 
 5. Have a match
     When the ball goes over the goal lines, game finishes with victory message.
@@ -34,7 +36,7 @@ window_height = 400
 window_width = 400
 ball_speed = 2
 # How fast can the computer catch up?
-computer_speed = 7
+computer_speed = 9
 # How random is the computer?
 computer_randomness = 2
 # 2 is the default for the lesson's animate speed of 20.
@@ -66,6 +68,44 @@ Shoes.app(
             #
             :resizable => false,
   ) do
+  def end_game( ball_x, ball_y, ball_bounces )
+    @ball.hide
+    # I'd like to keep the border, but then there are text alignment issues based on playing_field_boundery and the font sizes.
+    @border.hide
+    @computer_paddle.hide
+    @player_paddle.hide
+    @animation.stop
+    #
+    para(
+      strong( "Game Over\n" ),
+      :align => "center",
+      :stroke => orange,
+      :size => 18,
+    )
+    if ball_y > self.height then
+      para( "You lost!\n", :align => "center", :stroke => red )
+    elsif ball_y < 0 then
+      para(
+        "You win!\n",
+        :align => "center",
+        :stroke => green,
+      )
+    end
+    para(
+      em( "It took #{ ball_bounces } ball bounce#{ if ball_bounces > 1 then "s" end }." ),
+      :align => "center",
+      :stroke => orange,
+    )
+    if ball_bounces > 11 then
+      para(
+        em( "Wow!" ),
+        :align => "center",
+        :stroke => green,
+      )
+    end
+  end
+
+
   y_paddle_limit_down  = ( self.height - paddle_height - playing_field_boundery - 5 )
   x_paddle_limit_right = ( self.width  - paddle_width  - playing_field_boundery - 3 )
   y_paddle_limit_up = y_paddle_limit_down
@@ -74,7 +114,7 @@ Shoes.app(
   # Playing field design
   # TODO:  A checkerboard would be a nice background.
   background( background_color )
-  border(
+  @border = border(
     # TODO:  Is there a dashed stroke?
     playing_field_color,
     :margin => playing_field_boundery,
@@ -135,7 +175,7 @@ Shoes.app(
   # A ball appears left-top side and (moves smoothly to right-bottom side at 20 frames per second).
   xdir = 1
   ydir = 1
-  # I don't understand these numbers, but I'll keep them!  Perhaps this is the pixel height:width size ratio.
+  # Borrowed code.  I don't understand these numbers, but I'll keep them!  Perhaps this is the pixel height:width size ratio.
   xspeed = 8.4
   yspeed = 6.6
   #
@@ -150,7 +190,7 @@ Shoes.app(
   ball_y = self.height / 2
   # the + 2 is for the stroke width of the ball and the stroke width of the border.
   size = ( ball_radius * 2 ) + 2
-  animate( animate_speed ) do
+  @animation = animate( animate_speed ) do
     # Re-assert the paddle's limitations.  This notices if the window resizes.
     y_paddle_limit_down  = ( self.height - paddle_height - playing_field_boundery - 5 )
     x_paddle_limit_right = ( self.width  - paddle_width  - playing_field_boundery - 3 )
@@ -175,29 +215,41 @@ Shoes.app(
             ball_x > player_x and
             ball_x < player_x + paddle_width
           ) then
-      ydir *= -1
       ball_bounces += 1
-      puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - PLAYER"
+      # Change ball's speed and bounce angle when the ball is hit.
+      # TODO:  Vary the ball angle a little bit, based on how the paddle was moving when the impact was made?
+      #        This would require a complex rework of things, using my earlier ball angle ideas.
+      #        But the gameplay feel would be superior.
+      xspeed += 0.5
+      yspeed += 0.5
+      ydir *= -1
+      #puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - PLAYER"
     # top/computer side, check for a paddle collision
     elsif ( ball_y < 0 + playing_field_boundery + paddle_height + size and
             ball_x > computer_x and
             ball_x < computer_x + paddle_width
           ) then
-      ydir *= -1
       ball_bounces += 1
-      puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - COMPUTER"
-    # bottom/player side, check for a point
-    elsif ball_y > ( self.height - playing_field_boundery - size ) then
+      # Change ball's speed and bounce angle when the ball is hit.
+      # TODO:  Vary the ball angle a little bit, based on how the paddle was moving when the impact was made?
+      #        This would require a complex rework of things, using my earlier ball angle ideas.
+      #        But the gameplay feel would be superior.
+      xspeed += 0.5
+      yspeed += 0.5
       ydir *= -1
-      puts "The computer wins, it took #{ball_bounces} ball bounces."
-      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
-      # TODO:  End game
+      #puts "bounced at #{ball_x.to_i},#{ball_y.to_i} - COMPUTER"
+    # bottom/player side, check for a point
+    elsif ball_y > self.height then
+    #elsif ball_y > ( self.height - playing_field_boundery - size ) then
+      #ydir *= -1
+      end_game( ball_x, ball_y, ball_bounces )
+      #puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
     # top/computer side, check for a point
     # The numbers are right, but it doesn't look right when animated.
-    elsif ball_y < ( 0 + playing_field_boundery + size ) then
-      ydir *= -1
-      puts "The player wins, it took #{ball_bounces} ball bounces."
-      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
+    elsif ball_y < 0 then
+    #elsif ball_y < ( 0 + playing_field_boundery + size ) then
+      #ydir *= -1
+      end_game( ball_x, ball_y, ball_bounces )
       # TODO:  End game
     # left/right, bounce the ball
     # Bounce a ball on the edge of the window.
@@ -206,7 +258,7 @@ Shoes.app(
           ) then
       xdir *= -1
       ball_bounces += 1
-      puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
+      #puts "bounced at #{ball_x.to_i},#{ball_y.to_i}"
     end
     # Move the ball
     @ball.move ball_x.to_i, ball_y.to_i
