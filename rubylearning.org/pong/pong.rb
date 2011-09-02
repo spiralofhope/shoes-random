@@ -206,7 +206,6 @@ Shoes.app(
     # Figure out when the last useful x/y ball coordinates were and reset to there and continue?
 
     # FIXME - there is a multi-bounce happening if the paddle clips through the ball.  This can happen with the computer or player paddle.
-    # FIXME - I should allow the ball to "fall through" the window top/bottom.  It will look more legit.
     # FIXME - it feels like the left side of the computer paddle is allowing a victory.  Check.
     # Lock-in the ball within the window
     # bottom/player side, check for a paddle collision
