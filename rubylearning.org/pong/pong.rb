@@ -28,6 +28,10 @@ Week 1 program
     When the ball goes over the goal lines, game finishes with victory message.
 =end
 
+# FIXME:  The computer is too dumb.  Its disadvantage is too great because the ball will speed up too much for it.  Right now it is guaranteed to lose.  =)
+
+# FIXME:  The ball passes too deeply into the player's paddle.
+
 # BUG/TODO/TOWORKAROUND - mouse movement is not tracked/updated fast enough.  It's possible to whip the mouse across and out of the program window, and the paddle will not be trapped in the left wall but will instead be a little distant from it.  To remedy this, track if the mouse enters/leaves the window.  Track the positioning over time of the paddle.  If the mouse is out, and the position looked like it was going left, then peg the paddle to the left.  Same with the right.
 
 # IDEA:  The longer the game plays, the less wide the paddles become.  Can even flash some text up..
@@ -270,7 +274,7 @@ Shoes.app(
     @computer_paddle.move( computer_x, computer_y )
     # This needs to be a little fuzzy, to make the game play good.
     if ball_y < ball_y_previous and ball_y < self.height / 1.5 then
-      rand = ( Random.rand( 2 ) + 2 )
+      rand = ( rand( 2 ) + 2 )
       if    computer_x + ( paddle_width / 2 ) > ball_x then
         computer_x -= ( computer_speed - Random.rand( computer_randomness ) / rand )
       elsif computer_x + ( paddle_width / 2 ) < ball_x then

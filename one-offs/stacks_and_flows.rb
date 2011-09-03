@@ -1,6 +1,8 @@
 def r()
   flow( :margin => 5 ) do
-  background( lightyellow, :curve => 10 )
+    background( lightyellow, :curve => 10 )
+    # FIXME:  This doesn't actually work.  Proof:
+    #para( "aaaa\naaaa\naaaa\naaaa\naaaa\n" )
     para( 'aaaa' )
     l = link( 'b' * 10 ){}
     c = "\n"
