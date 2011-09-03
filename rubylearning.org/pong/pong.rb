@@ -1,4 +1,8 @@
 =begin
+http://rubylearning.org/
+Ruby with Shoes 8th Batch
+Week 1 program
+
 1. Open Shoes Window
     Window's width and height are both 400 pixel.
     Show your app name and revision number on the window's title bar.
@@ -24,11 +28,11 @@
     When the ball goes over the goal lines, game finishes with victory message.
 =end
 
-# BUG/TODO/TOWORKAROUND - mouse movement is not tracked/updated fast enough.  It's possible to whip the mouse across and out of the program window, and the paddle will not be trapped in the left wall.  To remedy this, track if the mouse enters/leaves the window.  Track the positioning over time of the paddle.  If the mouse is out, and the position looked like it was going left, then peg the paddle to the left.  Same with the right.
+# BUG/TODO/TOWORKAROUND - mouse movement is not tracked/updated fast enough.  It's possible to whip the mouse across and out of the program window, and the paddle will not be trapped in the left wall but will instead be a little distant from it.  To remedy this, track if the mouse enters/leaves the window.  Track the positioning over time of the paddle.  If the mouse is out, and the position looked like it was going left, then peg the paddle to the left.  Same with the right.
 
-# IDEA:  The longer the game plays, the less wide the paddles become, the faster the ball goes.  Can even flash some text up..
+# IDEA:  The longer the game plays, the less wide the paddles become.  Can even flash some text up..
 
-# IDEA:  Make it resizeable, and act accordingly.  There are things like app.height
+# IDEA:  Make the ball "alive" in a cartoonish way, and have it react a little when it bounces off of a wall, speeds up, is hit by a paddle etc.
 
 # User-serviceable variables.
 program_version = 0.1
