@@ -224,9 +224,11 @@ Shoes.app(
           ) then
       ball_bounces += 1
       # Change ball's speed and bounce angle when the ball is hit.
-      # TODO:  Vary the ball angle a little bit, based on how the paddle was moving when the impact was made?
+      # TODO:  Vary the ball angle a little bit, based on:
+      #        - how the paddle was moving when the impact was made?
+      #        - where along the paddle the hit connected?
       #        This would require a complex rework of things, using my earlier ball angle ideas.
-      #        But the gameplay feel would be superior.
+      #        But the gameplay feel would be vastly superior.
       xspeed += 0.5
       yspeed += 0.5
       ydir *= -1
